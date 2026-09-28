@@ -27,6 +27,9 @@ from app.workers.tasks import (
 log = get_logger(__name__)
 router = APIRouter(prefix="/internal/cron", tags=["cron"], include_in_schema=False)
 
+# Vercel Hobby: 60s per function. Reserve a margin for the response itself.
+TIME_BUDGET_SECONDS = 45
+
 
 async def _timed(name: str, coro: Any) -> dict[str, Any]:
     started = time.perf_counter()
@@ -88,13 +91,28 @@ async def cron_all(_: CronAuth) -> dict[str, Any]:
         reconcile_payments,
         check_servers_health,
     ]
+    started = time.perf_counter()
     results: list[dict[str, Any]] = []
+    skipped: list[str] = []
+
     for job in jobs:
+        # Vercel Hobby gives a function 60s. Running every job blindly can blow
+        # the limit mid-way, which would make the whole cron invocation fail and
+        # delay *all* work to the next day. Stop before that happens: whatever is
+        # left runs on the next tick.
+        if time.perf_counter() - started > TIME_BUDGET_SECONDS:
+            skipped.append(job.__name__)
+            log.warning("cron.budget_exhausted", skipped=skipped)
+            continue
         async with session_scope() as session:
             results.append(await _timed(job.__name__, job(session)))
+
     return {
         "ok": all(r["ok"] for r in results),
         "jobs": results,
+        "skipped": skipped,
+        "budget_exhausted": bool(skipped),
+        "elapsed_ms": int((time.perf_counter() - started) * 1000),
         "intervals": {
             "expiry": worker_settings.expiry_check_interval,
             "sync": worker_settings.xray_sync_interval,

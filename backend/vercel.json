@@ -20,20 +20,8 @@
   ],
   "crons": [
     {
-      "path": "/api/v1/internal/cron/expire",
-      "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/v1/internal/cron/sync-xray",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/v1/internal/cron/notify",
-      "schedule": "17 * * * *"
-    },
-    {
-      "path": "/api/v1/internal/cron/reconcile-payments",
-      "schedule": "*/5 * * * *"
+      "path": "/api/v1/internal/cron/all",
+      "schedule": "0 4 * * *"
     }
   ]
 }

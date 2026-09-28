@@ -1,0 +1,64 @@
+name: cron
+
+# На тарифе Vercel Hobby встроенный cron срабатывает раз в сутки, что
+# недостаточно: просроченная подписка будет отключаться в течение 24 часов,
+# а не 10 минут. Этот workflow запускает те же эндпоинты с нужной частотой
+# (GitHub Actions даёт 5 бесплатных запусков в минуту — более чем достаточно).
+#
+# Настройка:
+#   Settings → Secrets and variables → Actions → New repository secret
+#   CRON_SECRET   = то же значение, что CRON_SECRET в проекте Vercel
+#   API_URL       = https://api.example.com   (домен БЭКЕНДА)
+#
+# Если перешли на Vercel Pro — удалите этот файл и верните частые расписания
+# в backend/vercel.json, иначе задачи будут выполняться дважды.
+
+on:
+  schedule:
+    # минуты часы день месяц день_недели (UTC)
+    - cron: '*/5 * * * *'   # сверка платежей: подстраховка вебхуков
+    - cron: '*/10 * * * *'  # отключение просроченных подписок
+    - cron: '*/15 * * * *'  # синхронизация Xray
+    - cron: '17 * * * *'    # напоминания об окончании подписки
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Одна задача вместо всех (для проверки)'
+        required: false
+        default: all
+
+concurrency:
+  group: vpn-cron
+  cancel-in-progress: false
+
+jobs:
+  run:
+    name: ${{ inputs.job || 'scheduled' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call API
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          JOB: ${{ inputs.job }}
+        run: |
+          set -euo pipefail
+          if [ -z "${API_URL:-}" ] || [ -z "${CRON_SECRET:-}" ]; then
+            echo "::error::Не заданы secrets API_URL и CRON_SECRET"
+            exit 1
+          fi
+          job="${JOB:-all}"
+          if [ "$job" != "all" ]; then
+            url="${API_URL}/api/v1/internal/cron/${job}"
+          else
+            # Ручной запуск без указания job: гоняем всё, но по одному
+            for j in expire sync-xray notify reconcile-payments health; do
+              echo "::group::$j"
+              curl -fsS -H "Authorization: Bearer ${CRON_SECRET}" \
+                   "${API_URL}/api/v1/internal/cron/${j}" && echo
+              echo "::endgroup::"
+            done
+            exit 0
+          fi
+          curl -fsS -H "Authorization: Bearer ${CRON_SECRET}" "${url}" && echo

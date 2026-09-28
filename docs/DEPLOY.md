@@ -90,24 +90,31 @@ Vercel (backend)  ────  Neon / Postgres  ◄──── VPS с Xray (п
 
 ## 3. Vercel Cron
 
-`backend/vercel.json` уже содержит расписание:
+`backend/vercel.json` по умолчанию содержит **один ежедневный** запуск
+`/api/v1/internal/cron/all` — это требование тарифа Hobby (cron не чаще раза
+в сутки). Эндпоинты доступны и по отдельности:
 
 | Задача | Расписание | Что делает |
 |---|---|---|
-| `/api/v1/internal/cron/expire` | каждые 10 мин | отключает просроченных |
-| `/api/v1/internal/cron/sync-xray` | каждые 15 мин | сверяет БД с Xray |
-| `/api/v1/internal/cron/notify` | ежечасно | напоминания об окончании |
-| `/api/v1/internal/cron/reconcile-payments` | каждые 5 мин | подстраховка вебхуков |
+| `/api/v1/internal/cron/expire` | */10 * * * * | отключает просроченных |
+| `/api/v1/internal/cron/sync-xray` | */15 * * * * | сверяет БД с Xray |
+| `/api/v1/internal/cron/notify` | 17 * * * * | напоминания об окончании |
+| `/api/v1/internal/cron/reconcile-payments` | */5 * * * * | подстраховка вебхуков |
+| `/api/v1/internal/cron/all` | 0 4 * * * | всё сразу (вариант для Hobby) |
 
-Vercel отправляет `Authorization: Bearer $CRON_SECRET` — эндпоинты проверяют его.
+Vercel отправляет `Authorization: Bearer $CRON_SECRET` — эндпоинты проверяют его
+(принимают и GET, и POST: Vercel Cron шлёт GET, вручную удобнее POST).
 Проверить вручную:
 
 ```bash
 curl -H "Authorization: Bearer $CRON_SECRET" https://api.example.com/api/v1/internal/cron/all
 ```
 
-На Hobby (cron раз в сутки) оставьте **только** `/all` — он выполняет все задачи
-последовательно.
+На тарифе Pro верните частые расписания (и не забудьте поднять `maxDuration`).
+Альтернатива без Pro — внешний планировщик: см. `docs/VERCEL_DEPLOY.md`.
+
+**Ограничение 60 секунд** (Hobby): `/all` следит за бюджетом времени и
+пропускает не успевшие задачи, возвращая `budget_exhausted: true`.
 
 ---
 
