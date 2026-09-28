@@ -68,7 +68,12 @@ def _guarded_feed_update(original: Any) -> Any:
 
 
 def webhook_url() -> str:
-    base = telegram_settings.webapp_url.rstrip("/")
+    """URL, на который Telegram присылает апдейты.
+
+    Это адрес БЭКЕНДА (`API_PUBLIC_URL`), а не Web App: при раздельном
+    деплое фронтенд — статика и `/bot/webhook` там не существует.
+    """
+    base = telegram_settings.api_base_url
     return f"{base}{app_settings.api_base_path}/bot/webhook"
 
 
@@ -84,11 +89,20 @@ def secret_token() -> str:
 
 async def setup_webhook(bot: Bot) -> None:
     """Point Telegram at our endpoint and publish the command list."""
-    if not telegram_settings.webapp_url:
-        log.info("bot.webhook_skipped", reason="WEBAPP_URL is not set")
+    if not telegram_settings.configured:
+        log.info("bot.webhook_skipped", reason="BOT_TOKEN is not set")
+        return
+    if not telegram_settings.api_base_url:
+        log.info("bot.webhook_skipped", reason="API_PUBLIC_URL / WEBAPP_URL is not set")
         return
 
     url = webhook_url()
+    if not url.startswith("https://"):
+        # Telegram refuses plain HTTP, so a wrong setting would otherwise fail
+        # silently at delivery time rather than here.
+        log.error("bot.webhook_insecure_url", url=url)
+        return
+
     token = secret_token()
     await bot.set_webhook(url, secret_token=token, drop_pending_updates=False)
     await bot.set_my_commands(COMMANDS)
@@ -96,9 +110,8 @@ async def setup_webhook(bot: Bot) -> None:
 
 
 async def remove_webhook(bot: Bot) -> None:
-    with_default = False
     try:
-        await bot.delete_webhook(drop_pending_updates=with_default)
+        await bot.delete_webhook(drop_pending_updates=False)
         log.info("bot.webhook_removed")
     except Exception as exc:
         log.warning("bot.webhook_remove_failed", error=str(exc)[:200])

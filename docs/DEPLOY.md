@@ -53,11 +53,12 @@ Vercel (backend)  ────  Neon / Postgres  ◄──── VPS с Xray (п
    DATABASE_URL=postgresql+asyncpg://...
    CRON_SECRET=<openssl rand -hex 32>      # Vercel подставит в cron-запросы
    BOT_TOKEN=123456:AA...
-   WEBAPP_URL=https://vpn.example.com
+   WEBAPP_URL=https://vpn.example.com        # домен ФРОНТЕНДА
+   API_PUBLIC_URL=https://api.example.com    # домен БЭКЕНДА (вебхук бота)
    ADMIN_TELEGRAM_IDS=11111111,22222222
    PAYMENT_PROVIDER=rollypay
    PAYMENT_TOKEN=...
-   PAYMENT_RETURN_URL=https://vpn.example.com/?route=success
+   PAYMENT_RETURN_URL=https://vpn.example.com/
    SERVER_HOST=<ip-vps>
    SERVER_USER=root
    SERVER_SSH_KEY="-----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----"
@@ -121,6 +122,8 @@ curl -H "Authorization: Bearer $CRON_SECRET" https://api.example.com/api/v1/inte
 
    Значение вшивается на этапе сборки — поменяете в Vercel, пересоберёте деплой.
 3. Домен: `vpn.example.com` (тот же, что в `WEBAPP_URL`).
+
+Пошаговая версия со всеми проверками — [VERCEL_DEPLOY.md](VERCEL_DEPLOY.md).
 
 ### Проксирование (вариант без второго проекта)
 

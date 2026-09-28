@@ -97,7 +97,11 @@ make dev                      # API :8000, Web App :5173
 ## Деплой
 
 Коротко: **два проекта на Vercel** — `backend` (serverless Python) и `webapp`
-(Vite). Подробно — [docs/DEPLOY.md](docs/DEPLOY.md).
+(Vite static). Пошагово — [docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md),
+подробности и альтернативы — [docs/DEPLOY.md](docs/DEPLOY.md).
+
+> Два разных домена: `API_PUBLIC_URL` (куда Telegram шлёт апдейты бота) и
+> `WEBAPP_URL` (что открывает пользователь). Путать их нельзя.
 
 ## Проверка
 
@@ -109,7 +113,8 @@ make smoke         # быстрый прогон API без БД
 
 ## Важные документы
 
+- [docs/VERCEL_DEPLOY.md](docs/VERCEL_DEPLOY.md) — пошаговый деплой на Vercel
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — как устроены слои и поток покупки
 - [docs/XRAY.md](docs/XRAY.md) — VLESS/REALITY, безопасный SSH, ключи
 - [docs/PAYMENTS.md](docs/PAYMENTS.md) — интеграция Rollypay (раздел 9 ТЗ)
-- [docs/DEPLOY.md](docs/DEPLOY.md) — Vercel, Vercel Cron, H1Cloud VPS
+- [docs/DEPLOY.md](docs/DEPLOY.md) — Vercel, Vercel Cron, H1Cloud VPS, self-hosted

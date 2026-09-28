@@ -180,7 +180,14 @@ class VpnPublicSettings(BaseEnv):
 
 class TelegramSettings(BaseEnv):
     bot_token: SecretStr = Field(SecretStr(""), validation_alias=env_aliases("BOT_TOKEN", "TELEGRAM__BOT_TOKEN"))
+    # Публичный URL самого Web App (фронтенд). Тот же домен должен быть
+    # указан в BotFather (/setmenubutton) и в кнопке открытия приложения.
     webapp_url: str = Field("", validation_alias=env_aliases("WEBAPP_URL", "TELEGRAM__WEBAPP_URL"))
+    # Публичный URL БЭКЕНДА. Нужен для вебхука бота: апдейты Telegram должны
+    # приходить на /{API_BASE_PATH}/bot/webhook, а не на статику фронтенда.
+    # При одном домене (reverse proxy) можно оставить пустым — тогда
+    # используется WEBAPP_URL.
+    api_public_url: str = Field("", validation_alias=env_aliases("API_PUBLIC_URL", "API_URL"))
     webapp_short_name: str = Field("app", validation_alias=env_aliases("WEBAPP_SHORT_NAME"))
     admin_telegram_ids: Annotated[list[int], NoDecode] = Field(
         default_factory=list, validation_alias=env_aliases("ADMIN_TELEGRAM_IDS", "TELEGRAM__ADMIN_TELEGRAM_IDS")
@@ -205,6 +212,15 @@ class TelegramSettings(BaseEnv):
     @property
     def configured(self) -> bool:
         return bool(self.bot_token.get_secret_value().strip())
+
+    @property
+    def api_base_url(self) -> str:
+        """Базовый URL, на котором реально живёт API.
+
+        При раздельном деплое фронтенда и бэкенда это обязательно разные
+        домены, и перепутать их — значит отправить вебхук бота в статику.
+        """
+        return (self.api_public_url or self.webapp_url).rstrip("/")
 
 
 class PaymentSettings(BaseEnv):
