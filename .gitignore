@@ -34,3 +34,13 @@ Thumbs.db
 *.log
 tmp/
 uploads/
+
+# --- vercel ---
+.vercel
+.vercel/project.json
+.vercel/output
+
+# --- tokens / secrets (страховка) ---
+*.token
+.env.local
+.env.*.local

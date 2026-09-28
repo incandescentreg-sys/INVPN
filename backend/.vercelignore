@@ -1,0 +1,30 @@
+# Файлы, которые не нужны в runtime.
+# Важно: `vercel deploy` запускается из backend/, поэтому корневой .gitignore
+# репозитория здесь НЕ применяется — без этого файла в аплоад уезжают
+# .venv (200+ МБ) и __pycache__.
+
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# Тесты и dev-инструменты: на production-функции не нужны
+tests/
+scripts/
+Dockerfile
+pyproject.toml
+requirements-dev.txt
+
+# Миграции выполняются вручную (Vercel не запускает Alembic)
+alembic/
+alembic.ini
+
+.env
+.env.*
+!.env.example
+*.md
+.vercel
