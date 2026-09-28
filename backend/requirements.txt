@@ -38,3 +38,9 @@ sentry-sdk>=2.19
 tenacity>=9.0
 python-dateutil>=2.9
 orjson>=3.10
+
+# --- auth ---
+PyJWT>=2.10
+
+# --- serverless (Vercel): ASGI -> WSGI adapter for api/index.py ---
+mangum>=0.17
