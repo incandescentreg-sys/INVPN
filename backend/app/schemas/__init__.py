@@ -1,0 +1,88 @@
+"""Pydantic schemas (request/response contracts)."""
+
+from app.schemas.common import ErrorResponse, HealthResponse, Message, Page, PageParams
+from app.schemas.notification import (
+    ClientAppRead,
+    InstructionsRead,
+    NotificationRead,
+    SupportInfoRead,
+    SupportMessageCreate,
+)
+from app.schemas.payment import (
+    CreatePaymentRequest,
+    CreatePaymentResponse,
+    PaymentRead,
+    PaymentStatusResponse,
+    RefundRequest,
+)
+from app.schemas.plan import PlanCreate, PlanRead, PlanUpdate, PlanWithStats
+from app.schemas.subscription import (
+    ExtendDaysRequest,
+    SetExpiryRequest,
+    SubscriptionListRead,
+    SubscriptionRead,
+)
+from app.schemas.user import AccessToken, AuthResponse, ProfileUpdate, TelegramAuthRequest, UserRead
+from app.schemas.vpn import (
+    ClientLinksRead,
+    ClientRead,
+    ClientWithLinks,
+    CreateClientRequest,
+    DeviceLimitRead,
+    HealthRead,
+    HostKeyProbe,
+    HostKeyRead,
+    ServerCreate,
+    ServerRead,
+    ServerUpdate,
+    ServerWithStats,
+    SyncRequest,
+    SyncResponse,
+    VpnStateRead,
+)
+
+__all__ = [
+    "AccessToken",
+    "AuthResponse",
+    "ClientAppRead",
+    "ClientLinksRead",
+    "ClientRead",
+    "ClientWithLinks",
+    "CreateClientRequest",
+    "CreatePaymentRequest",
+    "CreatePaymentResponse",
+    "DeviceLimitRead",
+    "ErrorResponse",
+    "ExtendDaysRequest",
+    "HealthRead",
+    "HealthResponse",
+    "HostKeyProbe",
+    "HostKeyRead",
+    "InstructionsRead",
+    "Message",
+    "NotificationRead",
+    "Page",
+    "PageParams",
+    "PaymentRead",
+    "PaymentStatusResponse",
+    "PlanCreate",
+    "PlanRead",
+    "PlanUpdate",
+    "PlanWithStats",
+    "ProfileUpdate",
+    "RefundRequest",
+    "ServerCreate",
+    "ServerRead",
+    "ServerUpdate",
+    "ServerWithStats",
+    "SetExpiryRequest",
+    "SubscriptionListRead",
+    "SubscriptionRead",
+    "SupportInfoRead",
+    "SupportMessageCreate",
+    "SyncRequest",
+    "SyncResponse",
+    "TelegramAuthRequest",
+    "UserRead",
+    "VpnStateRead",
+]

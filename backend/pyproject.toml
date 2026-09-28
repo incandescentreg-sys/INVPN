@@ -1,0 +1,40 @@
+[project]
+name = "vpn-service-backend"
+version = "1.0.0"
+description = "Commercial VLESS/REALITY VPN service: Telegram bot + Web App + API + Xray management"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+exclude = ["alembic/versions", "migrations"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "C4", "SIM", "T20", "RUF"]
+ignore = ["B008", "RUF001", "RUF002", "RUF003", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"app/api/**" = ["B008"]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+warn_unused_configs = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+plugins = ["pydantic.mypy"]
+
+[tool.pydantic-settings]
+env_file = ".env"
+env_file_encoding = "utf-8"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = ["ignore::DeprecationWarning"]
+markers = [
+    "integration: требует БД/Redis",
+    "vpn: требует реального Xray-сервера",
+]

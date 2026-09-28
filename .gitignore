@@ -1,0 +1,36 @@
+# --- env / secrets ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!backend/tests/**/*.pem
+
+# --- python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+htmlcov/
+.coverage
+
+# --- node ---
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# --- os / ide ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# --- runtime ---
+*.log
+tmp/
+uploads/

@@ -1,0 +1,55 @@
+name: vpn-service
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-vpn}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vpn}
+      POSTGRES_DB: ${POSTGRES_DB:-vpn}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vpn} -d ${POSTGRES_DB:-vpn}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    env_file: [.env]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-vpn}:${POSTGRES_PASSWORD:-vpn}@db:5432/${POSTGRES_DB:-vpn}
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    command: >
+      sh -c "alembic upgrade head &&
+             python -m app.workers.scheduler"
+
+  webapp:
+    build:
+      context: ./webapp
+      args:
+        VITE_API_URL: ${WEBAPP_URL}/api/v1
+    restart: unless-stopped
+    depends_on: [api]
+    ports:
+      - "${WEBAPP_PORT:-8080}:80"
+
+volumes:
+  pgdata:
